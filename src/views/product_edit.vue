@@ -25,6 +25,7 @@
           <th>รายละเอียด</th>
           <th>ราคา</th>
           <th>จำนวน</th>
+          <th>ประเภทสินค้า</th> <!-- แสดงประเภทสินค้า -->
           <th>รูปภาพ</th>
           <th>การจัดการ</th>
         </tr>
@@ -36,6 +37,7 @@
           <td>{{ product.description }}</td>
           <td>{{ product.price }}</td>
           <td>{{ product.stock }}</td>
+          <td>{{ getCategoryName(product.type_id) }}</td> <!-- แสดงประเภทสินค้า -->
           <td>
             <img
               v-if="product.image"
@@ -108,6 +110,15 @@
               </div>
 
               <div class="mb-3">
+                <label class="form-label">ประเภทสินค้า</label>
+                <select v-model="editForm.type_id" class="form-select" required>
+                  <option v-for="category in categories" :key="category.type_id" :value="category.type_id">
+                    {{ category.type_name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="mb-3">
                 <label class="form-label">รูปภาพ</label>
                 <input
                   type="file"
@@ -142,6 +153,7 @@ export default {
   name: "ProductList",
   setup() {
     const products = ref([]);
+    const categories = ref([]); // สำหรับเก็บประเภทสินค้า
     const loading = ref(true);
     const error = ref(null);
     const isEditMode = ref(false);
@@ -151,7 +163,8 @@ export default {
       description: "",
       price: "",
       stock: "",
-      image: ""
+      image: "",
+      type_id: null // เพิ่ม field สำหรับประเภทสินค้า
     });
     const newImageFile = ref(null);
     let modalInstance = null;
@@ -186,7 +199,18 @@ export default {
       currentPage.value = 1;
     });
 
-    // โหลดข้อมูล
+    // โหลดข้อมูลประเภทสินค้า
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost/MK_SHOP/php_api/product_type.php");
+        const data = await res.json();
+        categories.value = data.success ? data.data : [];
+      } catch (err) {
+        error.value = err.message;
+      }
+    };
+
+    // โหลดข้อมูลสินค้า
     const fetchProducts = async () => {
       try {
         const res = await fetch("http://localhost/MK_SHOP/php_api/api_product.php");
@@ -199,6 +223,13 @@ export default {
       }
     };
 
+    // ดึงชื่อประเภทสินค้าจาก type_id
+    const getCategoryName = (typeId) => {
+      const category = categories.value.find(c => c.type_id === typeId);
+      return category ? category.type_name : "ไม่ระบุ";
+    };
+
+    // เปิด Modal เพิ่มสินค้า
     const openAddModal = () => {
       isEditMode.value = false;
       editForm.value = {
@@ -207,104 +238,115 @@ export default {
         description: "",
         price: "",
         stock: "",
-        image: ""
+        image: "",
+        type_id: null,
       };
       newImageFile.value = null;
-      const modalEl = document.getElementById("editModal");
-      modalInstance = new window.bootstrap.Modal(modalEl);
       modalInstance.show();
-      const fileInput = modalEl.querySelector('input[type="file"]');
-      if (fileInput) fileInput.value = "";
     };
 
+    // เปิด Modal แก้ไขสินค้า
     const openEditModal = (product) => {
       isEditMode.value = true;
-      editForm.value = { ...product };
+      editForm.value = { ...product }; // เติมข้อมูลสินค้าไปที่ form
       newImageFile.value = null;
-      const modalEl = document.getElementById("editModal");
-      modalInstance = new window.bootstrap.Modal(modalEl);
       modalInstance.show();
     };
 
-    const handleFileUpload = (event) => {
-      newImageFile.value = event.target.files[0];
-    };
-
+    // ฟังก์ชันเก็บข้อมูลสินค้า (เพิ่ม/แก้ไข)
     const saveProduct = async () => {
       const formData = new FormData();
-      formData.append("action", isEditMode.value ? "update" : "add");
-      if (isEditMode.value) formData.append("product_id", editForm.value.product_id);
       formData.append("product_name", editForm.value.product_name);
       formData.append("description", editForm.value.description);
       formData.append("price", editForm.value.price);
       formData.append("stock", editForm.value.stock);
-      if (newImageFile.value) formData.append("image", newImageFile.value);
+      formData.append("type_id", editForm.value.type_id); // ส่ง type_id
+      if (newImageFile.value) {
+        formData.append("image", newImageFile.value);
+      }
+
+      const apiUrl = isEditMode.value
+        ? "http://localhost/MK_SHOP/php_api/api_product.php?action=update"
+        : "http://localhost/MK_SHOP/php_api/api_product.php?action=add";
 
       try {
-        const res = await fetch("http://localhost/MK_SHOP/php_api/api_product.php", {
+        const res = await fetch(apiUrl, {
           method: "POST",
           body: formData
         });
-        const result = await res.json();
-        if (result.message) {
-          alert(result.message);
-          fetchProducts();
-          modalInstance.hide();
-        } else if (result.error) {
-          alert(result.error);
+        const data = await res.json();
+        if (data.success) {
+          fetchProducts(); // รีเฟรชข้อมูลสินค้า
+          modalInstance.hide(); // ปิด Modal
+        } else {
+          error.value = data.message || "บันทึกข้อมูลไม่สำเร็จ";
         }
       } catch (err) {
-        alert(err.message);
+        error.value = err.message;
       }
     };
 
-    const deleteProduct = async (id) => {
-      if (!confirm("คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?")) return;
-
-      const formData = new FormData();
-      formData.append("action", "delete");
-      formData.append("product_id", id);
+    // ฟังก์ชันลบสินค้า
+    const deleteProduct = async (productId) => {
+      const confirmDelete = confirm("คุณต้องการลบสินค้านี้หรือไม่?");
+      if (!confirmDelete) return;
 
       try {
-        const res = await fetch("http://localhost/MK_SHOP/php_api/api_product.php", {
-          method: "POST",
-          body: formData
+        const res = await fetch(`http://localhost/MK_SHOP/php_api/api_product.php?action=delete&product_id=${productId}`, {
+          method: "DELETE"
         });
-        const result = await res.json();
-        if (result.message) {
-          alert(result.message);
-          fetchProducts();
-        } else if (result.error) {
-          alert(result.error);
+        const data = await res.json();
+        if (data.success) {
+          fetchProducts(); // รีเฟรชข้อมูลสินค้า
+        } else {
+          error.value = data.message || "ลบข้อมูลไม่สำเร็จ";
         }
       } catch (err) {
-        alert(err.message);
+        error.value = err.message;
       }
     };
 
-    onMounted(fetchProducts);
+    // ฟังก์ชันเลือกไฟล์รูปภาพ
+    const handleFileUpload = (event) => {
+      newImageFile.value = event.target.files[0];
+    };
+
+    // โหลดข้อมูลสินค้าและประเภทสินค้าเมื่อเริ่มต้น
+    onMounted(() => {
+      fetchProducts();
+      fetchCategories();
+      modalInstance = new bootstrap.Modal(document.getElementById("editModal"));
+    });
 
     return {
       products,
+      categories,
       loading,
       error,
-      editForm,
       isEditMode,
-      openAddModal,
-      openEditModal,
-      handleFileUpload,
-      saveProduct,
-      deleteProduct,
-
-      // ✅ Pagination
-      currentPage,
+      editForm,
+      newImageFile,
+      modalInstance,
       totalPages,
       paginatedProducts,
+      currentPage,
       itemsPerPage,
       goToPage,
       nextPage,
-      prevPage
+      prevPage,
+      openAddModal,
+      openEditModal,
+      saveProduct,
+      deleteProduct,
+      getCategoryName,
+      handleFileUpload
     };
   }
 };
 </script>
+
+<style scoped>
+.table th, .table td {
+  text-align: center;
+}
+</style>

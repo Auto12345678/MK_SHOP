@@ -13,6 +13,18 @@
       </select>
     </div>
 
+    <div class="mb-4 text-center">
+      <label class="me-2 fw-bold">เลือกประเภทสินค้า:</label>
+      <select v-model="selectedCategory" class="form-select d-inline-block w-auto">
+        <option disabled value="">-- เลือกประเภทสินค้า --</option>
+        <option value="1">เนื้อสัตว์</option>
+        <option value="2">ผัก</option>
+        <option value="3">เครื่องดื่ม</option>
+      </select>
+    </div>
+
+
+
     <!-- แสดงสินค้า -->
     <div class="row">
       <div class="col-md-3" v-for="product in products" :key="product.product_id">
