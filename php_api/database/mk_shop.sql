@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 24, 2025 at 07:21 PM
+-- Generation Time: Oct 24, 2025 at 08:51 PM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.1.12
 
@@ -175,6 +175,7 @@ CREATE TABLE `products` (
   `price` decimal(10,2) NOT NULL,
   `image` text DEFAULT NULL,
   `stock` int(11) NOT NULL,
+  `type_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -182,16 +183,36 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`product_id`, `product_name`, `description`, `price`, `image`, `stock`, `created_at`) VALUES
-(8, 'ชุดผักรวม ชื่นใจ', 'ชุดผักรวมและหมู ชื่นใจ', '280.00', '1761182155_1761180238_3.jfif', 20, '2025-09-11 03:36:39'),
-(9, 'หมูเนื้อแดงรวมผัก', 'ชุด 1 หมูเนื้อแดงรวมผักสด', '250.00', '1761182114_1758077855_p5.jpg', 50, '2025-09-17 02:57:35'),
-(10, 'ชุด 2 ลูกชิ้น + หมูสามชั้น', 'ชุด 2 ลูกชิ้น + หมูสามชั้น', '199.00', '1761182102_1760498908_p6.jpg', 20, '2025-09-17 02:58:35'),
-(11, 'สันคอหมูรวมผัก', 'ชุด 3 สันคอหมูรวมผัก', '220.00', '1761182089_1760589547_p1.jpg', 20, '2025-09-17 02:59:44'),
-(12, 'ชุดรวมมิตร MK', 'ชุดรวมมิตร MK ฉ่ำ ๆ', '299.00', '1761182063_3.jfif', 20, '2025-09-17 04:08:58'),
-(13, 'ชาบูน้ำดำ หมู ผักสด', 'ชุด 5 ชาบูน้ำดำ หมู ผักสด', '250.00', '1761182047_1761180305_2.jfif', 20, '2025-09-17 04:15:07'),
-(14, 'ชุดรวมมิตรชาบู', 'รวมมิตร หมู ลูกชิ้น ผักสด', '299.00', '1761182034_1758077915_p6.jpg', 20, '2025-09-18 07:33:32'),
-(15, 'สันคอหมูล้วน', 'สันคอหมูล้วน เกาหลี', '220.00', '1761182020_7.jfif', 20, '2025-09-18 07:42:25'),
-(17, 'ชุดรวมหมู่ชาบู', 'ชุดรวมหมู่ชาบู หมูเนื้อแดง ผักรวม', '299.00', '1761182011_1760511137_p7.jpg', 30, '2025-10-15 03:18:12');
+INSERT INTO `products` (`product_id`, `product_name`, `description`, `price`, `image`, `stock`, `type_id`, `created_at`) VALUES
+(8, 'ชุดผักรวม ชื่นใจ', 'ชุดผักรวมและหมู ชื่นใจ', '280.00', '1761182155_1761180238_3.jfif', 20, 1, '2025-09-11 03:36:39'),
+(9, 'หมูเนื้อแดงรวมผัก', 'ชุด 1 หมูเนื้อแดงรวมผักสด', '250.00', '1761182114_1758077855_p5.jpg', 50, 2, '2025-09-17 02:57:35'),
+(10, 'ชุด 2 ลูกชิ้น + หมูสามชั้น', 'ชุด 2 ลูกชิ้น + หมูสามชั้น', '199.00', '1761182102_1760498908_p6.jpg', 20, 2, '2025-09-17 02:58:35'),
+(11, 'สันคอหมูรวมผัก', 'ชุด 3 สันคอหมูรวมผัก', '220.00', '1761182089_1760589547_p1.jpg', 20, 1, '2025-09-17 02:59:44'),
+(12, 'ชุดรวมมิตร MK', 'ชุดรวมมิตร MK ฉ่ำ ๆ', '299.00', '1761182063_3.jfif', 20, 3, '2025-09-17 04:08:58'),
+(13, 'ชาบูน้ำดำ หมู ผักสด', 'ชุด 5 ชาบูน้ำดำ หมู ผักสด', '250.00', '1761182047_1761180305_2.jfif', 20, 3, '2025-09-17 04:15:07'),
+(14, 'ชุดรวมมิตรชาบู', 'รวมมิตร หมู ลูกชิ้น ผักสด', '299.00', '1761182034_1758077915_p6.jpg', 20, 2, '2025-09-18 07:33:32'),
+(15, 'สันคอหมูล้วน', 'สันคอหมูล้วน เกาหลี', '220.00', '1761182020_7.jfif', 20, 1, '2025-09-18 07:42:25'),
+(17, 'ชุดรวมหมู่ชาบู', 'ชุดรวมหมู่ชาบู หมูเนื้อแดง ผักรวม', '299.00', '1761182011_1760511137_p7.jpg', 30, 3, '2025-10-15 03:18:12');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_type`
+--
+
+CREATE TABLE `product_type` (
+  `type_id` int(11) NOT NULL,
+  `type_name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_type`
+--
+
+INSERT INTO `product_type` (`type_id`, `type_name`) VALUES
+(1, 'เนื้อสัตว์'),
+(2, 'ผัก'),
+(3, 'เครื่องดื่ม');
 
 --
 -- Indexes for dumped tables
@@ -229,7 +250,14 @@ ALTER TABLE `order_items`
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
-  ADD PRIMARY KEY (`product_id`);
+  ADD PRIMARY KEY (`product_id`),
+  ADD KEY `type_id` (`type_id`);
+
+--
+-- Indexes for table `product_type`
+--
+ALTER TABLE `product_type`
+  ADD PRIMARY KEY (`type_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -266,6 +294,12 @@ ALTER TABLE `products`
   MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
+-- AUTO_INCREMENT for table `product_type`
+--
+ALTER TABLE `product_type`
+  MODIFY `type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -275,6 +309,12 @@ ALTER TABLE `products`
 ALTER TABLE `order_items`
   ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `products`
+--
+ALTER TABLE `products`
+  ADD CONSTRAINT `products_ibfk_1` FOREIGN KEY (`type_id`) REFERENCES `product_type` (`type_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
